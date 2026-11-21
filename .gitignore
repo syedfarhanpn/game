@@ -1,0 +1,15 @@
+# local editor / tool config
+.claude/
+__pycache__/
+*.pyc
+Thumbs.db
+desktop.ini
+
+# voice generation scratch files and downloaded voice models (see tools/README.txt)
+tools/_vo_tmp/
+tools/voices/
+*.onnx
+*.onnx.json
+
+# private design document — kept out of the public repo
+HELL GATE — Story Bible.pdf

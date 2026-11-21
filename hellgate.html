@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HELL GATE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/hellgate.css?v=2">
+</head>
+<body>
+<canvas id="game"></canvas>
+<div id="underwater"></div>
+<div id="hurt"></div>
+<canvas id="detect"></canvas>
+<div id="flash"></div>
+
+<div id="hud" class="hidden">
+  <div id="objective"></div>
+  <div id="breath"><div class="b"><label>ELI</label><i><b id="breath-eli"></b></i></div><div class="b hidden" id="breath-nia"><label>NIA</label><i><b></b></i></div></div>
+  <div id="marker"><span class="pin"></span><span class="d"></span></div>
+  <div id="prompt"></div>
+  <div id="hint"></div>
+  <div id="checkpoint">CHECKPOINT</div>
+</div>
+
+<div id="subtitle"><span class="who"></span><span class="line"></span></div>
+<div id="letterbox"><div class="top"></div><div class="bot"></div></div>
+<div id="fade"></div>
+<div id="title-card"><div class="tc-main"></div><div class="tc-sub"></div></div>
+<div id="skip-ring">HOLD SPACE TO SKIP</div>
+
+<div id="mapview" class="hidden"><canvas id="map-canvas" width="1000" height="1000"></canvas>
+  <div class="legend"><b>NEW YORK CITY</b> · <span style="color:#e8b04a">●</span> this mission · <span style="color:#fff">●</span> playable (1–6) · <span style="color:#999">●</span> later missions · <span style="color:#7cf">●</span> crew · <span style="color:#7cf">▲</span> Eli &nbsp;—&nbsp; M / Esc to close · map data © OpenStreetMap contributors</div>
+</div>
+
+<div id="pause" class="hidden"><div class="box">
+  <div class="logo small">HELL GATE</div>
+  <button id="btn-resume" class="btn">RESUME</button>
+  <button id="btn-restart" class="btn">RESTART FROM CHECKPOINT</button>
+  <button id="btn-pmap" class="btn">NEW YORK MAP</button>
+  <button id="btn-quit" class="btn ghost">QUIT TO TITLE</button>
+  <div class="keys"><span><kbd>WASD</kbd> swim / walk</span><span><kbd>Mouse</kbd> look</span><span><kbd>Shift</kbd> swim harder / run</span><span><kbd>C</kbd> dive / crouch</span><span><kbd>Q</kbd> Static ping</span><span><kbd>Space</kbd> surface / up / jump</span><span><kbd>E</kbd> interact</span><span><kbd>F</kbd> flashlight</span><span><kbd>M</kbd> map</span><span><kbd>Esc</kbd> pause</span></div>
+</div></div>
+
+<div id="fail" class="hidden"><div class="box"><div class="big">MISSION FAILED</div><div class="why"></div><button id="btn-retry" class="btn">RETRY FROM CHECKPOINT</button></div></div>
+<div id="end" class="hidden"><div class="box">
+  <div class="kicker">MISSION COMPLETE</div><div class="big"></div><div class="stat"></div>
+  <p></p>
+  <div class="next"></div>
+  <button id="btn-endmap" class="btn ghost">NEW YORK MAP</button><button id="btn-again" class="btn ghost">MISSION SELECT</button><button id="btn-next" class="btn hidden">NEXT MISSION</button>
+</div></div>
+
+<div id="splash">
+  <div class="rain"></div>
+  <div class="inner">
+    <div class="logo">HELL GATE</div>
+    <div class="tag">A New York story</div>
+    <div class="mission" id="splash-mission"></div>
+    <button id="btn-play" class="btn">PLAY</button>
+    <button id="btn-continue" class="btn ghost hidden">CONTINUE</button>
+    <button id="btn-map" class="btn ghost">NEW YORK MAP</button>
+    <div id="loading">Loading…</div>
+    <div id="missions"></div>
+    <div class="keys"><span><kbd>WASD</kbd> swim / walk</span><span><kbd>Mouse</kbd> look</span><span><kbd>Shift</kbd> faster</span><span><kbd>C</kbd> dive / crouch</span><span><kbd>Q</kbd> Static</span><span><kbd>Space</kbd> surface / jump</span><span><kbd>E</kbd> interact</span><span><kbd>F</kbd> flashlight</span><span><kbd>M</kbd> map</span><span><kbd>Esc</kbd> pause</span></div>
+    <div class="credits">Prototype. All characters, companies, the storm and the barrier are fictional; New York places are used as settings.
+      Map: real streets, buildings and heights of Red Hook, Hunts Point, Midtown, Brighton Beach and Gowanus, the Lower Manhattan skyline and the five boroughs © OpenStreetMap contributors (ODbL).
+      Voices: Piper TTS — en_US ryan (CC BY-NC-SA), norman, kristin, joe, bryce, danny, amy, en_GB alba. People: Mixamo &amp; Ready Player Me via three.js.</div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="js/config.js?v=2"></script>
+<script src="js/audio.js?v=2"></script>
+<script src="hg/vo_hg.js?v=2"></script>
+<script src="hg/vo_m2_6.js?v=2"></script>
+<script src="js/voice.js?v=2"></script>
+<script src="js/humanoid.js?v=2"></script>
+<script src="js/realhuman.js?v=2"></script>
+<script src="js/cinematic.js?v=2"></script>
+<script src="hg/hg_world.js?v=2"></script>
+<script src="hg/building7.js?v=2"></script>
+<script src="hg/sets.js?v=2"></script>
+<script src="hg/diver.js?v=2"></script>
+<script src="hg/actors.js?v=2"></script>
+<script src="hg/mission_base.js?v=2"></script>
+<script src="hg/mission1.js?v=2"></script>
+<script src="hg/m2_stash.js?v=2"></script>
+<script src="hg/m3_traffic.js?v=2"></script>
+<script src="hg/m4_watch.js?v=2"></script>
+<script src="hg/m5_glass.js?v=2"></script>
+<script src="hg/m6_burn.js?v=2"></script>
+<script src="hg/nycmap.js?v=2"></script>
+<script src="hg/hg_main.js?v=2"></script>
+</body>
+</html>

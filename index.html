@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kochi: City of Shadows</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Yellowtail&family=Noto+Sans+Malayalam:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=29">
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<!-- Cinematic layers -->
+<div id="letterbox-top" class="letterbox"></div>
+<div id="letterbox-bottom" class="letterbox"></div>
+<div id="fade"></div>
+<div id="title-card"><div class="tc-main"></div><div class="tc-sub"></div></div>
+<div id="subtitle"><span class="who"></span><span class="line"></span></div>
+<div id="skip-hint">Hold <b>SPACE</b> to skip</div>
+<div id="skip-ring"></div>
+
+<!-- HUD -->
+<div id="hud" class="hidden">
+  <div id="topright">
+    <div id="clock">18:00</div>
+    <div id="money">₹0</div>
+    <div id="rep">REPUTATION 0</div>
+    <div id="stars"></div>
+  </div>
+  <div id="minimap-wrap">
+    <canvas id="minimap" width="220" height="220"></canvas>
+    <div id="bars"><div id="healthbar"><i></i></div></div>
+    <div id="injuries"></div>
+  </div>
+  <div id="objective"></div>
+  <div id="notify"></div>
+  <div id="station"></div>
+  <div id="gps"></div>
+  <div id="hospcomp"><span class="cross">+</span><span class="arrow">&#9650;</span><span class="txt"></span><small>G: GPS &middot; hold G: call 108</small></div>
+  <div id="timer"></div>
+  <div id="speedo"><span id="gear">N</span><span id="speed">0</span><small>KM/H</small><div class="rpm"><i id="rpmbar"></i></div><div class="dmg"><span>DAMAGE</span><i><b id="dmgbar"></b></i></div><div id="carname"></div></div>
+  <div id="prompt"></div>
+  <div id="barks"></div>
+  <div id="damage-flash"></div>
+</div>
+<div id="docpanel" class="hidden"><div class="doc"><div class="doc-title"></div><div class="doc-sub"></div><div class="doc-rows"></div><div class="doc-foot"></div><button class="menu-btn" id="doc-ok">CONTINUE</button></div></div>
+<div id="garage" class="hidden"><div class="g-panel"></div></div>
+<div id="charpanel" class="hidden"></div>
+<div id="banner"><div class="b-title"></div><div class="b-sub"></div></div>
+<div id="bigmap" class="hidden"><canvas id="bigmap-canvas" width="900" height="900"></canvas><div class="bm-legend">M to close &nbsp;·&nbsp; <span style="color:#e8202f">✚</span> Hospital &nbsp; <span style="color:#ffd23f">●</span> Objective &nbsp; <span style="color:#ff4fa3">●</span> Next job &nbsp; <span style="color:#7cf">▲</span> You</div></div>
+
+<!-- Menus -->
+<div id="splash">
+  <div class="splash-bg"></div>
+  <div class="logo kochi"><span class="k1">KOCHI</span><span class="k2">CITY OF SHADOWS</span><span class="k3">നിഴലുകളുടെ നഗരം</span></div>
+  <div class="tagline">Fort Kochi, Kerala · Prototype v0.1</div>
+  <div id="splash-buttons">
+    <button id="btn-new" class="menu-btn">NEW GAME</button>
+    <button id="btn-continue" class="menu-btn hidden">CONTINUE</button>
+  </div>
+  <div id="loading">Building Fort Kochi…</div>
+  <div class="controls"><div><b>WASD</b> move / drive</div><div><b>Mouse</b> camera</div><div><b>Shift</b> sprint</div><div><b>Space</b> jump / handbrake</div><div><b>E</b> interact</div><div><b>F</b> enter / exit vehicle</div><div><b>Click</b> punch</div><div><b>R</b> kick</div><div><b>C</b> crouch</div><div><b>Tab</b> character</div><div><b>M</b> map</div><div><b>G</b> hospital GPS (hold: 108)</div><div><b>H</b> horn</div><div><b>V</b> cinematic cam</div><div><b>Esc</b> pause</div></div>
+  <div class="disclaimer">Kochi: City of Shadows — fictional story; characters are fictional. Map: real Fort Kochi &amp; Mattancherry streets, buildings and coastline, and Kerala boundaries © OpenStreetMap contributors (ODbL). Malayalam voices: Piper TTS (ml_IN arjun / meera; IIT Madras Indic TTS data). Car model: "Ferrari 458 Italia" by vicent091036 (CC BY 4.0), via three.js; "(FREE) Porsche 911 Carrera 4S" by Karol Miklas (CC BY-SA 4.0). People: Mixamo &amp; Ready Player Me via three.js. Bikes (CC BY 4.0, Sketchfab): Royal Enfield Classic 350 by Mansoor, Kawasaki Ninja H2 by Anshuman Dutta, Yamaha R1 by ejsnowy, Ducati V4R by Jonrss, Suzuki Hayabusa by JUSTGAME, Z1000 2014 by e-restrepo1114.</div>
+</div>
+
+<div id="pause" class="hidden">
+  <div class="logo kochi small"><span class="k1">KOCHI</span><span class="k2">CITY OF SHADOWS</span></div>
+  <div class="pause-title">PAUSED</div>
+  <button class="menu-btn" id="btn-resume">RESUME</button>
+  <button class="menu-btn" id="btn-bloom">BLOOM: ON</button>
+  <button class="menu-btn" id="btn-shadows">SHADOWS: ON</button>
+  <button class="menu-btn" id="btn-lang">DIALOGUE: MALAYALAM + ENGLISH</button>
+  <button class="menu-btn" id="btn-restart">RESTART JOB</button>
+  <div class="controls"><div><b>WASD</b> move / drive</div><div><b>Mouse</b> camera</div><div><b>Shift</b> sprint</div><div><b>Space</b> jump / handbrake</div><div><b>E</b> interact</div><div><b>F</b> enter / exit vehicle</div><div><b>Click</b> punch</div><div><b>R</b> kick</div><div><b>C</b> crouch</div><div><b>Tab</b> character</div><div><b>M</b> map</div><div><b>G</b> hospital GPS (hold: 108)</div><div><b>H</b> horn</div><div><b>V</b> cinematic cam</div><div><b>Esc</b> pause</div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/utils/SkeletonUtils.js"></script>
+<script src="js/config.js?v=29"></script>
+<script src="js/audio.js?v=29"></script>
+<script src="js/voicelines.js?v=29"></script>
+<script src="js/voice.js?v=29"></script>
+<script src="js/world.js?v=29"></script>
+<script src="js/humanoid.js?v=29"></script>
+<script src="js/realhuman.js?v=29"></script>
+<script src="js/cardb.js?v=29"></script>
+<script src="js/vehicle.js?v=29"></script>
+<script src="js/carmodels.js?v=29"></script>
+<script src="js/npc.js?v=29"></script>
+<script src="js/player.js?v=29"></script>
+<script src="js/hud.js?v=29"></script>
+<script src="js/cinematic.js?v=29"></script>
+<script src="js/missions.js?v=29"></script>
+<script src="js/combat.js?v=29"></script>
+<script src="js/medical.js?v=29"></script>
+<script src="js/law.js?v=29"></script>
+<script src="js/garage.js?v=29"></script>
+<script src="js/main.js?v=29"></script>
+</body>
+</html>
